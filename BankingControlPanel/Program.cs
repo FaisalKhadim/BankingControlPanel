@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -18,7 +19,7 @@ var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 // Add services to the container
 builder.Services.AddControllers();
 
-// Configure SQLite 
+// Configure SQLite
 
 var connectionString = "Data Source=banking_control_panel.db";
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -61,7 +62,11 @@ builder.Services.AddScoped<IClientRepository, ClientRepository>();
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddControllers()
+      .AddJsonOptions(options =>
+      {
+          options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+      });
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Banking Control Panel API", Version = "v1" });
@@ -111,7 +116,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Banking Control Panel API V1");
-        c.RoutePrefix = string.Empty;
+        c.RoutePrefix = "swagger";
     });
 }
 

@@ -1,18 +1,14 @@
-﻿using AutoMapper;
-using BankingControlPanel.Contracts;
+﻿using BankingControlPanel.Contracts;
 using BankingControlPanel.Data;
 using BankingControlPanel.DTOs;
 using BankingControlPanel.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace BankingControlPanel.Repositories
 {
-
     public class ClientRepository : IClientRepository
     {
         private readonly AppDbContext _context;
-
 
         public ClientRepository(AppDbContext context)
         {
@@ -37,10 +33,33 @@ namespace BankingControlPanel.Repositories
                 .SingleOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task AddClient(Client client)
+        public async Task<Client> AddClient(Client client)
         {
+            if (client.Address != null)
+            {
+                // Ensure Address exists in the database or attach it
+                var existingAddress = await _context.Addresses.FindAsync(client.Address.Id);
+                if (existingAddress != null)
+                {
+                    _context.Entry(existingAddress).State = EntityState.Modified;
+                }
+                else
+                {
+                    _context.Addresses.Add(client.Address);
+                }
+            }
+            if (client.Accounts != null)
+            {
+                foreach (var account in client.Accounts)
+                {
+                    account.ClientId = client.Id; // Ensure the accounts have the correct client ID
+                    await _context.Accounts.AddAsync(account);
+                }
+            }
+
             await _context.Clients.AddAsync(client);
             await _context.SaveChangesAsync();
+            return client;
         }
 
         public async Task UpdateClient(Client client)
@@ -59,7 +78,6 @@ namespace BankingControlPanel.Repositories
             }
         }
 
-
         public async Task<bool> EmailExists(string email)
         {
             return await _context.Clients.AnyAsync(c => c.Email == email);
@@ -69,6 +87,7 @@ namespace BankingControlPanel.Repositories
         {
             return await _context.Clients.AnyAsync(c => c.PersonalId == personalId);
         }
+
         public async Task<bool> EmailExistsForOtherClient(int clientId, string email)
         {
             return await _context.Clients.AnyAsync(c => c.Id != clientId && c.Email == email);
@@ -79,7 +98,9 @@ namespace BankingControlPanel.Repositories
             return await _context.Clients.AnyAsync(c => c.Id != clientId && c.PersonalId == personalId);
         }
 
+        public async Task<bool> AccountNumberExists(string accountNumber)
+        {
+            return await _context.Accounts.AnyAsync(a => a.AccountNumber == accountNumber);
+        }
     }
-
-
 }

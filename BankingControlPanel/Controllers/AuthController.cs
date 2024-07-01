@@ -31,6 +31,12 @@ namespace BankingControlPanel.Controllers
             {
                 return BadRequest(new { message = "Invalid role" });
             }
+            // Check if username already exists
+            var existingUser = await _context.Users.AnyAsync(u => u.Username == request.Username);
+            if (existingUser)
+            {
+                return BadRequest(new { message = "Username already exists try with another username" });
+            }
             var user = new User
             {
                 Username = request.Username,
@@ -72,8 +78,8 @@ namespace BankingControlPanel.Controllers
               new Claim(ClaimTypes.Role, user.Role)
         };
 
-      // Include user role in token
-    
+            // Include user role in token
+
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
@@ -84,5 +90,4 @@ namespace BankingControlPanel.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-
 }

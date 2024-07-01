@@ -6,8 +6,9 @@ namespace BankingControlPanel.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -18,7 +19,6 @@ namespace BankingControlPanel.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-           
 
             // Configure primary keys
             modelBuilder.Entity<User>().HasKey(u => u.Id);
@@ -28,11 +28,16 @@ namespace BankingControlPanel.Data
             modelBuilder.Entity<Client>().HasKey(u => u.Id);
 
             modelBuilder.Entity<Client>()
-               .Property(c => c.Id)
-               .ValueGeneratedOnAdd();
+              .HasMany(c => c.Accounts)
+              .WithOne(a => a.Client)
+              .HasForeignKey(a => a.ClientId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Client>()
+                .HasOne(c => c.Address)
+                .WithOne(a => a.Client)
+                .HasForeignKey<Address>(a => a.ClientId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
-
     }
-
-
 }

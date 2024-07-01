@@ -1,6 +1,4 @@
-﻿
-
-namespace BankingControlPanel.Models
+﻿namespace BankingControlPanel.Models
 {
     public class User
     {

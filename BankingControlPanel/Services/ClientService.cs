@@ -11,7 +11,6 @@ namespace BankingControlPanel.Services
         private readonly IMapper _mapper;
         private readonly List<string> _lastSearchParameters = new List<string>();
 
-
         public ClientService(IClientRepository repository, IMapper mapper)
         {
             _repository = repository;
@@ -20,11 +19,8 @@ namespace BankingControlPanel.Services
 
         public async Task<IEnumerable<ClientDto>> GetClients(ClientParameters parameters)
         {
-    
             var clients = await _repository.GetClients(parameters);
             return _mapper.Map<IEnumerable<ClientDto>>(clients);
-
-
         }
 
         public async Task<ClientDto> GetClientById(int id)
@@ -33,11 +29,12 @@ namespace BankingControlPanel.Services
             return _mapper.Map<ClientDto>(client);
         }
 
-        public async Task AddClient(ClientDto clientDto)
+        public async Task<Client> AddClient(ClientDto clientDto)
         {
             clientDto.Id = 0;
             var client = _mapper.Map<Client>(clientDto);
-            await _repository.AddClient(client);
+            var clientNew = await _repository.AddClient(client);
+            return clientNew;
         }
 
         public async Task UpdateClient(int id, ClientDto clientDto)
@@ -55,7 +52,7 @@ namespace BankingControlPanel.Services
             await _repository.DeleteClient(id);
         }
 
-         public async Task<bool> EmailExists(string email)
+        public async Task<bool> EmailExists(string email)
         {
             return await _repository.EmailExists(email);
         }
@@ -64,9 +61,9 @@ namespace BankingControlPanel.Services
         {
             return await _repository.PersonalIdExists(personalId);
         }
+
         public async Task<bool> EmailExistsForOtherClient(int clientId, string email)
         {
-
             return await _repository.EmailExistsForOtherClient(clientId, email);
         }
 
@@ -74,7 +71,6 @@ namespace BankingControlPanel.Services
         {
             return await _repository.PersonalIdExistsForOtherClient(clientId, personalId);
         }
-
 
         public async Task<IEnumerable<ClientDto>> GetSortedClients(ClientParameters parameters)
         {
@@ -93,16 +89,19 @@ namespace BankingControlPanel.Services
                               clients.OrderByDescending(c => c.FirstName) :
                               clients.OrderBy(c => c.FirstName);
                     break;
+
                 case "lastname":
                     clients = sortOrder?.ToLower() == sortOrder ?
                               clients.OrderByDescending(c => c.LastName) :
                               clients.OrderBy(c => c.LastName);
                     break;
+
                 case "email":
                     clients = sortOrder?.ToLower() == sortOrder ?
                               clients.OrderByDescending(c => c.Email) :
                               clients.OrderBy(c => c.Email);
                     break;
+
                 default:
                     break;
             }
@@ -116,6 +115,7 @@ namespace BankingControlPanel.Services
             clients = ApplyFilters(clients, parameters);
             return _mapper.Map<IEnumerable<ClientDto>>(clients);
         }
+
         private IEnumerable<Client> ApplyFilters(IEnumerable<Client> clients, ClientParameters parameters)
         {
             if (!string.IsNullOrWhiteSpace(parameters.FirstName))
@@ -133,9 +133,9 @@ namespace BankingControlPanel.Services
             // Add more filters for other properties as needed
             return clients;
         }
+
         private void AddSearchParameter(ClientParameters parameters)
         {
-
             string searchParameter = $"{parameters.FirstName}_{parameters.LastName}_{parameters.LastName}_{parameters.SortBy}_{parameters.SortOrder}";
             if (!_lastSearchParameters.Contains(searchParameter))
             {
@@ -152,7 +152,9 @@ namespace BankingControlPanel.Services
             return _lastSearchParameters;
         }
 
-
+        public async Task<bool> AccountNumberExists(string accountNumber)
+        {
+            return await _repository.AccountNumberExists(accountNumber);
+        }
     }
-
 }

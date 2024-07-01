@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using System.Text.Json.Serialization;
 
 namespace BankingControlPanel.Models
 {
@@ -12,7 +12,10 @@ namespace BankingControlPanel.Models
         public string ProfilePhoto { get; set; }
         public string MobileNumber { get; set; }
         public string Sex { get; set; }
+
+        [JsonIgnore]
         public Address Address { get; set; }
+
         public List<Account> Accounts { get; set; }
     }
 }

@@ -8,10 +8,15 @@ namespace BankingControlPanel.Mappings
     {
         public MappingProfile()
         {
-            CreateMap<Client, ClientDto>().ReverseMap();
-            CreateMap<Address, AddressDto>().ReverseMap();
-            CreateMap<Account, AccountDto>().ReverseMap();
+            CreateMap<Client, ClientDto>()
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+            CreateMap<ClientDto, Client>();
+
+            CreateMap<Address, AddressDto>();
+            CreateMap<AddressDto, Address>();
+
+            CreateMap<Account, AccountDto>();
+            CreateMap<AccountDto, Account>();
         }
     }
-
 }
